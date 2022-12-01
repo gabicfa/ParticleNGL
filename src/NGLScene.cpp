@@ -42,7 +42,7 @@ void NGLScene::initializeGL()
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
   glEnable(GL_MULTISAMPLE);
-  m_emitter = std::make_unique<Emitter>(300'000);
+  m_emitter = std::make_unique<Emitter>(100'000);
   ngl::ShaderLib::use(ngl::nglColourShader);
   // MVP is the model view project uiform
   // Colour 4floats
