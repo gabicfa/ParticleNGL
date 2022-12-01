@@ -5,6 +5,8 @@
 #include <vector>
 #include <string_view>
 
+#include <ngl/AbstractVAO.h>
+#include <memory>
 #include "Particle.h"
 
 class Emitter
@@ -17,8 +19,8 @@ class Emitter
     private:
         void createParticle(Particle &io_p);
         std::vector<Particle> m_particles;
-        GLuint m_vao;
-        GLuint m_buffer;
+        std::unique_ptr<ngl::AbstractVAO> m_vao;
+        
 };
 
 #endif

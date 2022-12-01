@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <ngl/VAOFactory.h>
+#include <ngl/SimpleVAO.h>
 
 ngl::Vec3 randomVectorOnSphere(float _radius=1)
 {
@@ -34,11 +36,7 @@ Emitter::Emitter(size_t _numParticles)
     {
         createParticle(p);
     }
-
-    //Setup OpenGL buffers
-    glGenVertexArrays(1,&m_vao);
-    glGenBuffers(1,&m_buffer);
-    std::cout<<m_vao<<' '<<m_buffer<<'\n';
+    m_vao=ngl::VAOFactory::createVAO(ngl::simpleVAO, GL_POINTS);
 }
 
 size_t Emitter::getNumParticles() const
@@ -64,18 +62,14 @@ void Emitter::update()
 void Emitter::render() const
 {
     glPointSize(4);
-    //std::cout<<"render\n";
-    glBindVertexArray(m_vao);
-    glBufferData(GL_ARRAY_BUFFER, m_particles.size()*sizeof(Particle), 
-    &m_particles[0].position.m_x, GL_STATIC_DRAW);
-    
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE, sizeof(Particle),0);
-    glEnableVertexAttribArray(0);
+    m_vao->bind();
+    m_vao->setData(ngl::SimpleVAO::VertexData(m_particles.size()*sizeof(Particle), m_particles[0].position.m_x));
+    m_vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(Particle),0);
+    m_vao->setVertexAttributePointer(1,3,GL_FLOAT,sizeof(Particle),3);
 
-    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE, sizeof(Particle),reinterpret_cast<float *>(3*sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
+    m_vao->setNumIndices(m_particles.size());
+    m_vao->draw();
 
+    m_vao->unbind();
 
-    glDrawArrays(GL_POINTS, 0, m_particles.size());
-    glBindVertexArray(0);
 }
