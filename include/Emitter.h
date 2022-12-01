@@ -16,6 +16,7 @@ class Emitter
         size_t getNumParticles() const;
         void update();
         void render() const;
+        void addParticles(int _number);
     private:
         void createParticle(Particle &io_p);
         std::vector<Particle> m_particles;

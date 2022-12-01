@@ -27,6 +27,18 @@ void Emitter::createParticle(Particle &io_p)
     randomVectorOnSphere()*10;
     io_p.direction.m_y=std::abs(io_p.direction.m_y);
     io_p.colour=ngl::Random::getRandomColour3();
+    io_p.lifetime = ngl::Random::getIntFromGeneratorName("particleLife");
+    io_p.scale = 0.1f;
+}
+
+void Emitter::addParticles(int _number)
+{
+    Particle p;
+    for(int i=0; i<_number; ++i)
+    {
+        createParticle(p);
+        m_particles.push_back(p);
+    }
 }
 
 Emitter::Emitter(size_t _numParticles)
@@ -54,7 +66,7 @@ void Emitter::update()
         p.direction += gravity * _dt * 0.5f;
         p.position += p.direction * _dt;
         p.scale += 0.001f;
-        if(p.direction.m_y <= 0.0f)
+        if(p.direction.m_y <= 0.0f || --p.lifetime <= 0)
             createParticle(p);
     }
 }
@@ -66,7 +78,7 @@ void Emitter::render() const
     m_vao->setData(ngl::SimpleVAO::VertexData(m_particles.size()*sizeof(Particle), m_particles[0].position.m_x));
     m_vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(Particle),0);
     m_vao->setVertexAttributePointer(1,3,GL_FLOAT,sizeof(Particle),3);
-
+    m_vao->setVertexAttributePointer(2,1,GL_FLOAT,sizeof(Particle),9);
     m_vao->setNumIndices(m_particles.size());
     m_vao->draw();
 

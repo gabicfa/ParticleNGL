@@ -6,6 +6,7 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Util.h>
+#include <ngl/Random.h>
 #include <iostream>
 
 NGLScene::NGLScene()
@@ -42,17 +43,21 @@ void NGLScene::initializeGL()
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
   glEnable(GL_MULTISAMPLE);
-  m_emitter = std::make_unique<Emitter>(100'000);
+  glEnable(GL_PROGRAM_POINT_SIZE);
+  m_emitter = std::make_unique<Emitter>(10'000);
   ngl::ShaderLib::use(ngl::nglColourShader);
   // MVP is the model view project uiform
   // Colour 4floats
   m_view = ngl::lookAt({10,10,10},{0,0,0},{0,1,0});
   m_project = ngl::perspective(45.0f, 1.0f,0.01f,50.0f);
   ngl::ShaderLib::setUniform("MVP", m_project * m_view);
+
   ngl::ShaderLib::loadShader(ParticleShader, "shaders/ParticleVertex.glsl","shaders/ParticleFragment.glsl");
   ngl::ShaderLib::use(ParticleShader);
   ngl::ShaderLib::setUniform("MVP", m_project * m_view);
   
+  auto dist = std::uniform_int_distribution<int>(10,100);
+  ngl::Random::addIntGenerator("particleLife", dist);
   startTimer(10);
 }
 
@@ -69,6 +74,13 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_win.width,m_win.height);
+  auto rotX = ngl::Mat4::rotateX(m_win.spinXFace);
+  auto rotY = ngl::Mat4::rotateX(m_win.spinYFace);
+  m_mouseGlobalTX = rotX * rotY;
+  m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
+  m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
+  m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
+  ngl::ShaderLib::setUniform("MVP", m_project * m_view * m_mouseGlobalTX);
   m_emitter->render();
 }
 
@@ -87,6 +99,14 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
       m_win.spinYFace=0;
       m_modelPos.set(ngl::Vec3::zero());
 
+  break;
+
+  case Qt::Key_1:
+    m_emitter->addParticles(100);
+  break;
+  case Qt::Key_2:
+    std::cout<<"plus 1000\n";
+    m_emitter->addParticles(1000);
   break;
   default : break;
   }

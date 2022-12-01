@@ -85,6 +85,7 @@ private:
     std::unique_ptr<Emitter> m_emitter;
     ngl::Mat4 m_view;
     ngl::Mat4 m_project;
+    ngl::Mat4 m_mouseGlobalTX;
 };
 
 
